@@ -32,7 +32,7 @@ document.addEventListener("keydown", function (e) {
     angular.extend($scope,{searching:false,results:true, pages:{Newest:1}, watched:{episodes:[],movies:[]}, movies:{Newest:[],Search:[]}});
 
     // Movies
-    $scope.movie_tabs = ['Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Drama', 'Family', 'Fantasy', 'Horror', 'Mystery', 'Romance', 'Sci-Fi'];
+    $scope.movie_tabs = ['Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Drama', 'Family', 'Fantasy', 'Horror', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller'];
     $scope.movie_tabs.forEach(function(genre){
       $scope.movies[genre] = [];
       $scope.pages[genre] = 1;
@@ -73,6 +73,8 @@ document.addEventListener("keydown", function (e) {
       $rootScope.title = json;
       $rootScope.title["cover"] = json.medium_cover_image;
       $rootScope.title["backdrop"] = json.background_image;
+      $rootScope.title["synopsis"] = json.synopsis;
+      $rootScope.title["year"] = json.year;
       $http.get('https://yts.ag/api/v2/movie_suggestions.json?limit=12&movie_id='+json.id).success(function(data) {
         $rootScope.title["suggestions"] = JSON.parse(JSON.stringify(data));
       });
@@ -189,7 +191,8 @@ document.addEventListener("keydown", function (e) {
     $scope.initiate = function(json) {
       $rootScope.title = json;
       $rootScope.title["cover"] = json.images.poster;
-      $rootScope.title["backdrop"] = json.images.poster;
+      $rootScope.title["backdrop"] = json.images.fanart;
+      $rootScope.title["synopsis"] = json.synopsis;
       var seasons = [];
 
       $http.get('https://tv-v2.api-fetch.website/show/'+json.imdb_id).success(function(data1) {
@@ -277,11 +280,23 @@ document.addEventListener("keydown", function (e) {
     $scope.title = $rootScope.title;
     $scope.title["cover"] = $rootScope.title["cover"];
     $scope.title["backdrop"] = $rootScope.title["backdrop"];
+    $scope.title["synopsis"] = $rootScope.title["synopsis"];
     $scope.title["suggestions"] = $rootScope.title["suggestions"];
     $scope.title["Watched"] = {Episodes:{}};
     settings.get("watchedTVShowEpisodes").then(watchedTVShowEpisodes => {
       $scope.title["Watched"]["Episodes"] = watchedTVShowEpisodes; // Watched
     });
+    $scope.reloadInfo = function(title) {      
+      $scope.title = title;
+      $scope.title["cover"] = title.medium_cover_image;
+      $scope.title["backdrop"] = title.background_image;
+      $scope.title["synopsis"] = title.synopsis;
+      $scope.title["year"] = title.year;
+      $http.get('https://yts.ag/api/v2/movie_suggestions.json?limit=12&movie_id='+title.id).success(function(data) {
+        $scope.title["suggestions"] = JSON.parse(JSON.stringify(data));
+      });
+            
+    };
 
     $scope.loadMovie = function(title) {
       angular.element(document.getElementById("watchPlayer")).empty();
